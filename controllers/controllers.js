@@ -1,5 +1,6 @@
 const axios = require('axios');
 const {OAuth2Client} = require('google-auth-library');
+const User = require('../schemas/user');
 const jwtutils = require('../utils/jwtutils')
 
 const CLIENT_ID = "472602366911-rnitktrv3npb4252har9ch6cl6of0pim.apps.googleusercontent.com";
@@ -26,6 +27,12 @@ async function login(req,res) {
         user['name'] = payload['name'];
         user['email'] = payload['email'];
         user['picture'] = payload['picture'];
+
+        const exists = await User.findOne({'email': user.email});
+
+        if(!exists) {
+            const newUser = await User.create(user);
+        }
 
         user.token = await jwtutils.sign(user);
         res.status(200).json({user});
