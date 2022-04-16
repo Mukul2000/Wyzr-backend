@@ -1,5 +1,6 @@
 const axios = require('axios');
 const {OAuth2Client} = require('google-auth-library');
+const Query = require('../schemas/query');
 const User = require('../schemas/user');
 const jwtutils = require('../utils/jwtutils')
 
@@ -9,7 +10,15 @@ const BOOKS_API = `https://www.googleapis.com/books/v1/volumes`
 
 
 async function record_query(req,res) {
+    const search_query = req.body.search;
+    const user = await User.findOne({email: req.user.email});
 
+    await Query.create({
+        user_id: user._id,
+        search_query: search_query
+    });
+
+    res.status(201).json({"Message": "Search recorded"});
 }
 
 async function login(req,res) {
