@@ -4,30 +4,60 @@ const Query = require('../schemas/query');
 const User = require('../schemas/user');
 const jwtutils = require('../utils/jwtutils')
 
-const CLIENT_ID = "472602366911-rnitktrv3npb4252har9ch6cl6of0pim.apps.googleusercontent.com";
-const BOOKS_API_KEY = "AIzaSyDgbqlUYLmDvVnYmHtRSzgekkuxwSGSDpo";
-const BOOKS_API = `https://www.googleapis.com/books/v1/volumes`
 
 
-async function record_query(req,res) {
-    const search_query = req.body.search;
-    const user = await User.findOne({email: req.user.email});
 
-    await Query.create({
-        user_id: user._id,
-        search_query: search_query
-    });
+async function search_query(req,res) {
+    const search_query = req.query.search;
 
-    res.status(201).json({"Message": "Search recorded"});
+    try {
+        const volumes = axios.get(process.env.BOOKS_API, {
+            params: {
+                q:search_query,
+                key:process.env.BOOKS_API_KEY
+            },
+        });
+    
+        const findUser = User.findOne({email: req.user.email});
+    
+        const [result, user] = await Promise.all([volumes, findUser]);
+    
+        await Query.create({
+            user_id: user._id,
+            search_query: search_query
+        });
+        res.status(200).json(result.data.items);
+    }
+    catch(e) {
+        console.log(e);
+        res.status(500).json({"error": "Internal server error"});
+    }
+
+}
+
+async function book_detail(req, res) {
+    const id = req.params.id;
+    try {
+        const book = await axios.get(process.env.VOLUME_API+id, {
+            params: {
+                key:process.env.BOOKS_API_KEY
+            }
+        });
+        res.status(200).json(book.data)
+    }
+    catch(e) {
+        console.log(e);
+        res.status(500).json({"error": "Internal server error"});
+    }
 }
 
 async function login(req,res) {
     token = req.body.token;
-    const client = new OAuth2Client(CLIENT_ID);
+    const client = new OAuth2Client(process.env.CLIENT_ID);
     try {
         const ticket = await client.verifyIdToken({
             idToken: token,
-            audience: CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
+            audience: process.env.CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
         });
         const payload = ticket.getPayload();
         const userid = payload['sub'];
@@ -52,4 +82,4 @@ async function login(req,res) {
     }
 }
 
-module.exports={record_query, login};
+module.exports={search_query, login, book_detail};

@@ -6,7 +6,8 @@ const route = express.Router();
 const controllers = require('../controllers/controllers');
 
 
-route.post('/search', authByToken, controllers.record_query)
+route.get('/search', authByToken, controllers.search_query);
+route.get('/book/:id', authByToken, controllers.book_detail);
 route.post('/login', controllers.login);
 
 module.exports = route;
