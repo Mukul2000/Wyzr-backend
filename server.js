@@ -10,16 +10,10 @@ const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // support json encoded bodies
-app.use(cors({
-   origin:'*', 
-   credentials:true,            //access-control-allow-credentials:true
-   optionSuccessStatus:200,
-}));
+app.use(cors());
 app.use('/api', bookRoute);
 
 const PORT = process.env.PORT || 8000;
-
-//  app.listen(8000, () => console.log(`Server started on port ${PORT}`))
 
 mongoose.connect(process.env.CONNECTION_URL,  {useNewUrlParser:true, useUnifiedTopology:true})
 .then(() => app.listen(PORT, () => console.log(`Server started on port ${PORT}`)))
