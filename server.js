@@ -4,13 +4,16 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config()
 
-const bookRoute = require('./routes/books');
-
 const app = express();
+
+app.use(cors({
+   origin: '*'
+}));
+
+const bookRoute = require('./routes/books');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // support json encoded bodies
-app.use(cors());
 app.use('/api', bookRoute);
 
 const PORT = process.env.PORT || 8000;
