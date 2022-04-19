@@ -7,7 +7,7 @@ require('dotenv').config()
 const app = express();
 
 app.use(cors({
-   origin: '*'
+   origin: ['http://localhost:3000', 'https://main.d2yy8non28kl6f.amplifyapp.com/'] 
 }));
 
 const bookRoute = require('./routes/books');
